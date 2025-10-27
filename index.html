@@ -104,11 +104,15 @@
             border: 2px solid var(--primary);
         }
         
+        .btn-danger {
+            background: #dc3545;
+        }
+        
         .section {
             margin-bottom: 50px;
         }
         
-        .deal-form {
+        .deal-form, .ticket-form {
             background: rgba(255,255,255,0.05);
             padding: 30px;
             border-radius: 15px;
@@ -138,18 +142,18 @@
             font-size: 16px;
         }
         
-        .ticket-system {
+        .ticket-system, .admin-panel {
             background: rgba(255,255,255,0.05);
             border-radius: 15px;
             padding: 30px;
         }
         
-        .ticket-list {
+        .deal-list, .ticket-list {
             max-height: 400px;
             overflow-y: auto;
         }
         
-        .ticket-item {
+        .deal-item, .ticket-item {
             background: rgba(0,0,0,0.3);
             padding: 15px;
             margin-bottom: 10px;
@@ -157,10 +161,24 @@
             border-left: 4px solid var(--primary);
         }
         
-        .admin-panel {
-            background: rgba(255,255,255,0.05);
-            border-radius: 15px;
-            padding: 30px;
+        .deal-item.completed {
+            border-left-color: var(--secondary);
+        }
+        
+        .deal-item.cancelled {
+            border-left-color: #dc3545;
+        }
+        
+        .ticket-item.open {
+            border-left-color: var(--primary);
+        }
+        
+        .ticket-item.in_progress {
+            border-left-color: var(--secondary);
+        }
+        
+        .ticket-item.closed {
+            border-left-color: #dc3545;
         }
         
         .hidden {
@@ -188,6 +206,63 @@
         .nav-btn.active {
             background: var(--primary);
         }
+        
+        .user-profile {
+            background: rgba(255,255,255,0.05);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .auth-section {
+            text-align: center;
+            padding: 40px;
+        }
+        
+        .deal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .status-active { background: var(--primary); }
+        .status-completed { background: var(--secondary); color: #000; }
+        .status-cancelled { background: #dc3545; }
+        .status-open { background: var(--primary); }
+        .status-in_progress { background: var(--secondary); color: #000; }
+        .status-closed { background: #dc3545; }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 8px;
+            color: white;
+            z-index: 1000;
+            animation: slideIn 0.3s ease;
+        }
+
+        .notification.success { background: var(--primary); }
+        .notification.error { background: #dc3545; }
+        .notification.warning { background: var(--secondary); color: #000; }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
     </style>
 </head>
 <body>
@@ -198,156 +273,223 @@
             <p>Платформа для безопасного обмена активов с защитой обеих сторон</p>
         </div>
 
-        <div class="nav">
-            <button class="nav-btn active" onclick="showSection('main')">Главная</button>
-            <button class="nav-btn" onclick="showSection('create-deal')">Создать сделку</button>
-            <button class="nav-btn" onclick="showSection('tickets')">Тикеты</button>
-            <button class="nav-btn" onclick="showSection('admin')">Админ-панель</button>
-        </div>
-
-        <!-- Главная секция -->
-        <div id="main" class="section">
-            <div class="stats">
-                <div class="stat-card">
-                    <h3>1000+</h3>
-                    <p>Успешных сделок</p>
-                </div>
-                <div class="stat-card">
-                    <h3>99.8%</h3>
-                    <p>Довольных клиентов</p>
-                </div>
-                <div class="stat-card">
-                    <h3>24/7</h3>
-                    <p>Поддержка</p>
-                </div>
-                <div class="stat-card">
-                    <h3>5 мин</h3>
-                    <p>Среднее время сделки</p>
-                </div>
-            </div>
-
-            <div class="features">
-                <div class="feature-card">
-                    <h3>🛡️ Гарантия безопасности</h3>
-                    <p>Все сделки защищены эскроу-системой. Средства хранятся у гаранта до подтверждения получения.</p>
-                </div>
-                <div class="feature-card">
-                    <h3>⚡ Мгновенные сделки</h3>
-                    <p>Быстрое создание и выполнение сделок с автоматическим уведомлением участников.</p>
-                </div>
-                <div class="feature-card">
-                    <h3>🌐 Мультивалютность</h3>
-                    <p>Поддержка TON, RUB через СБП, Telegram Stars и других способов оплаты.</p>
-                </div>
-                <div class="feature-card">
-                    <h3>📱 Удобный интерфейс</h3>
-                    <p>Доступ через Telegram бота и веб-версию. Удобно на любом устройстве.</p>
-                </div>
-            </div>
-
-            <div style="text-align: center; margin-top: 40px;">
-                <a href="https://t.me/magnateotcbot" class="btn" style="margin-right: 15px;">
-                    📱 Открыть в Telegram
-                </a>
-                <button class="btn btn-secondary" onclick="showSection('create-deal')">
-                    💼 Начать сделку
+        <div id="auth-section" class="auth-section">
+            <h2>🔐 Авторизация</h2>
+            <p>Для доступа к веб-версии необходимо авторизоваться через Telegram</p>
+            <br>
+            <a href="https://t.me/magnateotcbot" class="btn" target="_blank">
+                📱 Открыть бота для авторизации
+            </a>
+            <br><br>
+            <div class="form-group">
+                <label>Введите ваш Telegram ID (получите в боте командой /id):</label>
+                <input type="number" id="user-id" placeholder="123456789">
+                <button class="btn" onclick="authUser()" style="margin-top: 10px; width: 100%;">
+                    Войти
                 </button>
             </div>
         </div>
 
-        <!-- Создание сделки -->
-        <div id="create-deal" class="section hidden">
-            <h2 style="text-align: center; margin-bottom: 30px;">Создание новой сделки</h2>
-            
-            <div class="deal-form">
-                <div class="form-group">
-                    <label>Тип сделки:</label>
-                    <select id="deal-type">
-                        <option value="buy">Покупка</option>
-                        <option value="sell">Продажа</option>
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label>Способ оплаты:</label>
-                    <select id="payment-method">
-                        <option value="ton">TON</option>
-                        <option value="sbp">СБП (RUB)</option>
-                        <option value="stars">Telegram Stars</option>
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label>Сумма:</label>
-                    <input type="number" id="deal-amount" placeholder="Введите сумму">
-                </div>
-                
-                <div class="form-group">
-                    <label>Описание сделки:</label>
-                    <textarea id="deal-description" rows="4" placeholder="Опишите условия сделки..."></textarea>
-                </div>
-                
-                <button class="btn" onclick="createDeal()" style="width: 100%;">
-                    Создать сделку
-                </button>
+        <div id="app-content" class="hidden">
+            <div class="user-profile" id="user-profile">
+                <h3>👤 Профиль пользователя</h3>
+                <div id="profile-info"></div>
             </div>
-        </div>
 
-        <!-- Система тикетов -->
-        <div id="tickets" class="section hidden">
-            <h2 style="text-align: center; margin-bottom: 30px;">Система поддержки</h2>
-            
-            <div class="ticket-system">
-                <button class="btn" onclick="showCreateTicket()" style="margin-bottom: 20px;">
-                    📝 Создать новый тикет
-                </button>
-                
-                <div id="create-ticket-form" class="hidden">
-                    <div class="form-group">
-                        <label>Тема тикета:</label>
-                        <input type="text" id="ticket-subject" placeholder="Кратко опишите проблему">
+            <div class="nav">
+                <button class="nav-btn active" onclick="showSection('main')">Главная</button>
+                <button class="nav-btn" onclick="showSection('deals')">Сделки</button>
+                <button class="nav-btn" onclick="showSection('create-deal')">Создать сделку</button>
+                <button class="nav-btn" onclick="showSection('tickets')">Тикеты</button>
+                <button class="nav-btn" onclick="showSection('admin')" id="admin-btn" style="display: none;">Админ-панель</button>
+                <button class="nav-btn btn-danger" onclick="logout()">Выйти</button>
+            </div>
+
+            <!-- Главная секция -->
+            <div id="main" class="section">
+                <div class="stats">
+                    <div class="stat-card">
+                        <h3 id="total-deals">0</h3>
+                        <p>Всего сделок</p>
                     </div>
-                    <div class="form-group">
-                        <label>Сообщение:</label>
-                        <textarea id="ticket-message" rows="4" placeholder="Подробно опишите вашу проблему..."></textarea>
+                    <div class="stat-card">
+                        <h3 id="active-deals">0</h3>
+                        <p>Активных сделок</p>
                     </div>
-                    <button class="btn" onclick="createTicket()">Отправить тикет</button>
+                    <div class="stat-card">
+                        <h3 id="user-balance">0</h3>
+                        <p>Ваш баланс</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3 id="successful-deals">0</h3>
+                        <p>Ваших успешных сделок</p>
+                    </div>
                 </div>
-                
-                <div class="ticket-list" id="tickets-list">
-                    <!-- Список тикетов будет здесь -->
-                </div>
-            </div>
-        </div>
 
-        <!-- Админ-панель -->
-        <div id="admin" class="section hidden">
-            <h2 style="text-align: center; margin-bottom: 30px;">Админ-панель</h2>
-            
-            <div class="admin-panel">
-                <div style="text-align: center; margin-bottom: 30px;">
-                    <p>Для доступа к админ-панели необходимо войти через Telegram</p>
-                    <a href="https://t.me/YourBotUsername" class="btn">
-                        🔐 Войти как администратор
-                    </a>
-                </div>
-                
                 <div class="features">
                     <div class="feature-card">
-                        <h3>📊 Статистика</h3>
-                        <p>Обзор сделок, пользователей и финансовых показателей</p>
+                        <h3>🛡️ Гарантия безопасности</h3>
+                        <p>Все сделки защищены эскроу-системой. Средства хранятся у гаранта до подтверждения получения.</p>
                     </div>
                     <div class="feature-card">
-                        <h3>🔄 Управление сделками</h3>
-                        <p>Модерация и управление активными сделками</p>
+                        <h3>⚡ Мгновенные сделки</h3>
+                        <p>Быстрое создание и выполнение сделок с автоматическим уведомлением участников.</p>
                     </div>
                     <div class="feature-card">
-                        <h3>👥 Управление пользователями</h3>
-                        <p>Назначение администраторов, управление балансами</p>
+                        <h3>🌐 Мультивалютность</h3>
+                        <p>Поддержка TON, RUB через СБП, Telegram Stars и других способов оплаты.</p>
                     </div>
                     <div class="feature-card">
-                        <h3>📨 Обратная связь</h3>
-                        <p>Управление тикетами и обратной связью пользователей</p>
+                        <h3>📱 Удобный интерфейс</h3>
+                        <p>Доступ через Telegram бота и веб-версию. Удобно на любом устройстве.</p>
+                    </div>
+                </div>
+
+                <div style="text-align: center; margin-top: 40px;">
+                    <a href="https://t.me/magnateotcbot" class="btn" style="margin-right: 15px;" target="_blank">
+                        📱 Открыть в Telegram
+                    </a>
+                    <button class="btn btn-secondary" onclick="showSection('create-deal')">
+                        💼 Начать сделку
+                    </button>
+                </div>
+            </div>
+
+            <!-- Список сделок -->
+            <div id="deals" class="section hidden">
+                <h2 style="text-align: center; margin-bottom: 30px;">Активные сделки</h2>
+                <div class="loading" id="deals-loading">Загрузка сделок...</div>
+                <div class="deal-list" id="deals-list">
+                    <!-- Список сделок будет здесь -->
+                </div>
+            </div>
+
+            <!-- Создание сделки -->
+            <div id="create-deal" class="section hidden">
+                <h2 style="text-align: center; margin-bottom: 30px;">Создание новой сделки</h2>
+                
+                <div class="deal-form">
+                    <div class="form-group">
+                        <label>Способ оплаты:</label>
+                        <select id="payment-method">
+                            <option value="ton">TON</option>
+                            <option value="sbp">СБП (RUB)</option>
+                            <option value="stars">Telegram Stars</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Сумма:</label>
+                        <input type="number" id="deal-amount" placeholder="Введите сумму">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Описание сделки:</label>
+                        <textarea id="deal-description" rows="4" placeholder="Опишите условия сделки..."></textarea>
+                    </div>
+                    
+                    <button class="btn" onclick="createDeal()" style="width: 100%;">
+                        Создать сделку
+                    </button>
+                </div>
+            </div>
+
+            <!-- Система тикетов -->
+            <div id="tickets" class="section hidden">
+                <h2 style="text-align: center; margin-bottom: 30px;">Система поддержки</h2>
+                
+                <div class="ticket-system">
+                    <button class="btn" onclick="showCreateTicket()" style="margin-bottom: 20px;">
+                        📝 Создать новый тикет
+                    </button>
+                    
+                    <div id="create-ticket-form" class="ticket-form hidden">
+                        <div class="form-group">
+                            <label>Тема тикета:</label>
+                            <input type="text" id="ticket-subject" placeholder="Кратко опишите проблему">
+                        </div>
+                        <div class="form-group">
+                            <label>Сообщение:</label>
+                            <textarea id="ticket-message" rows="4" placeholder="Подробно опишите вашу проблему..."></textarea>
+                        </div>
+                        <button class="btn" onclick="createTicket()">Отправить тикет</button>
+                    </div>
+                    
+                    <h3>Мои тикеты</h3>
+                    <div class="loading" id="tickets-loading">Загрузка тикетов...</div>
+                    <div class="ticket-list" id="tickets-list">
+                        <!-- Список тикетов будет здесь -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Админ-панель -->
+            <div id="admin" class="section hidden">
+                <h2 style="text-align: center; margin-bottom: 30px;">Админ-панель</h2>
+                
+                <div class="admin-panel">
+                    <div class="stats">
+                        <div class="stat-card">
+                            <h3 id="admin-total-users">0</h3>
+                            <p>Всего пользователей</p>
+                        </div>
+                        <div class="stat-card">
+                            <h3 id="admin-total-deals">0</h3>
+                            <p>Всего сделок</p>
+                        </div>
+                        <div class="stat-card">
+                            <h3 id="admin-active-deals">0</h3>
+                            <p>Активных сделок</p>
+                        </div>
+                        <div class="stat-card">
+                            <h3 id="admin-open-tickets">0</h3>
+                            <p>Открытых тикетов</p>
+                        </div>
+                    </div>
+
+                    <div class="nav">
+                        <button class="nav-btn active" onclick="showAdminSection('deals')">Управление сделками</button>
+                        <button class="nav-btn" onclick="showAdminSection('tickets')">Управление тикетами</button>
+                        <button class="nav-btn" onclick="showAdminSection('users')">Управление пользователями</button>
+                    </div>
+
+                    <div id="admin-deals" class="admin-section">
+                        <h3>Все сделки</h3>
+                        <div class="loading" id="admin-deals-loading">Загрузка сделок...</div>
+                        <div class="deal-list" id="admin-deals-list">
+                            <!-- Список всех сделок для админа -->
+                        </div>
+                    </div>
+
+                    <div id="admin-tickets" class="admin-section hidden">
+                        <h3>Все тикеты</h3>
+                        <div class="loading" id="admin-tickets-loading">Загрузка тикетов...</div>
+                        <div class="ticket-list" id="admin-tickets-list">
+                            <!-- Список всех тикетов для админа -->
+                        </div>
+                    </div>
+
+                    <div id="admin-users" class="admin-section hidden">
+                        <h3>Управление пользователями</h3>
+                        <div class="ticket-form">
+                            <div class="form-group">
+                                <label>ID пользователя:</label>
+                                <input type="number" id="admin-user-id" placeholder="Введите ID пользователя">
+                            </div>
+                            <div class="form-group">
+                                <label>Действие:</label>
+                                <select id="admin-user-action">
+                                    <option value="balance">Изменить баланс</option>
+                                    <option value="deals">Изменить количество сделок</option>
+                                    <option value="admin">Назначить/снять админа</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Значение:</label>
+                                <input type="text" id="admin-user-value" placeholder="Введите значение">
+                            </div>
+                            <button class="btn" onclick="adminUserAction()">Выполнить</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -355,24 +497,424 @@
     </div>
 
     <script>
+        // API эмулятор для GitHub Pages
+        class MagnateAPI {
+            constructor() {
+                this.botUsername = 'magnateotcbot';
+                this.storageKey = 'magnate_otc_data';
+                this.init();
+            }
+
+            init() {
+                if (!localStorage.getItem(this.storageKey)) {
+                    const initialData = {
+                        users: {
+                            '7674627532': {
+                                user_id: 7674627532,
+                                username: 'admin1',
+                                balance: 10000,
+                                successful_deals: 50,
+                                ton_wallet: 'UQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAJKZ',
+                                card_details: '5536914111052341',
+                                is_admin: true
+                            },
+                            '8312808945': {
+                                user_id: 8312808945,
+                                username: 'admin2',
+                                balance: 8000,
+                                successful_deals: 30,
+                                ton_wallet: 'UQBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB',
+                                card_details: '5536914222156789',
+                                is_admin: true
+                            }
+                        },
+                        deals: {},
+                        tickets: {},
+                        sessions: {}
+                    };
+                    localStorage.setItem(this.storageKey, JSON.stringify(initialData));
+                }
+            }
+
+            getData() {
+                return JSON.parse(localStorage.getItem(this.storageKey));
+            }
+
+            saveData(data) {
+                localStorage.setItem(this.storageKey, JSON.stringify(data));
+            }
+
+            async callBotMethod(method, params = {}) {
+                // Имитация задержки сети
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                const data = this.getData();
+                let response;
+
+                switch (method) {
+                    case 'auth':
+                        const userId = params.user_id.toString();
+                        if (!data.users[userId]) {
+                            data.users[userId] = {
+                                user_id: parseInt(userId),
+                                username: `user_${userId}`,
+                                balance: 1000,
+                                successful_deals: 0,
+                                ton_wallet: '',
+                                card_details: '',
+                                is_admin: userId === '7674627532' || userId === '8312808945'
+                            };
+                        }
+                        
+                        const sessionId = 'session_' + Math.random().toString(36).substr(2, 9);
+                        data.sessions[sessionId] = userId;
+                        this.saveData(data);
+                        
+                        response = {
+                            session_id: sessionId,
+                            user: data.users[userId]
+                        };
+                        break;
+
+                    case 'create_deal':
+                        const dealId = 'deal_' + Math.random().toString(36).substr(2, 9);
+                        const userIdForDeal = data.sessions[params.sessionId];
+                        data.deals[dealId] = {
+                            deal_id: dealId,
+                            amount: parseFloat(params.amount),
+                            description: params.description,
+                            payment_method: params.payment_method,
+                            seller_id: parseInt(userIdForDeal),
+                            seller_username: data.users[userIdForDeal]?.username || 'Unknown',
+                            seller_successful_deals: data.users[userIdForDeal]?.successful_deals || 0,
+                            buyer_id: null,
+                            status: 'active',
+                            created_at: new Date().toISOString()
+                        };
+                        this.saveData(data);
+                        
+                        response = {
+                            success: true,
+                            deal_id: dealId,
+                            deal_link: `https://t.me/${this.botUsername}?start=${dealId}`
+                        };
+                        break;
+
+                    case 'get_active_deals':
+                        const activeDeals = Object.values(data.deals).filter(deal => deal.status === 'active');
+                        response = { deals: activeDeals };
+                        break;
+
+                    case 'create_ticket':
+                        const ticketId = 'ticket_' + Math.random().toString(36).substr(2, 9);
+                        const userIdForTicket = data.sessions[params.sessionId];
+                        data.tickets[ticketId] = {
+                            ticket_id: ticketId,
+                            user_id: parseInt(userIdForTicket),
+                            username: data.users[userIdForTicket]?.username || 'Unknown',
+                            subject: params.subject,
+                            message: params.message,
+                            status: 'open',
+                            admin_id: null,
+                            admin_username: null,
+                            created_at: new Date().toISOString()
+                        };
+                        this.saveData(data);
+                        
+                        response = {
+                            success: true,
+                            ticket_id: ticketId
+                        };
+                        break;
+
+                    case 'get_my_tickets':
+                        const userIdForMyTickets = data.sessions[params.sessionId];
+                        const userTickets = Object.values(data.tickets).filter(
+                            ticket => ticket.user_id === parseInt(userIdForMyTickets)
+                        );
+                        response = { tickets: userTickets };
+                        break;
+
+                    case 'get_user_profile':
+                        const userIdForProfile = data.sessions[params.sessionId];
+                        const user = data.users[userIdForProfile];
+                        response = user || { error: 'User not found' };
+                        break;
+
+                    case 'get_admin_deals':
+                        if (!this.isAdmin(params.sessionId, data)) {
+                            response = { error: 'Forbidden' };
+                        } else {
+                            response = { deals: Object.values(data.deals) };
+                        }
+                        break;
+
+                    case 'get_admin_tickets':
+                        if (!this.isAdmin(params.sessionId, data)) {
+                            response = { error: 'Forbidden' };
+                        } else {
+                            response = { tickets: Object.values(data.tickets) };
+                        }
+                        break;
+
+                    case 'get_admin_stats':
+                        if (!this.isAdmin(params.sessionId, data)) {
+                            response = { error: 'Forbidden' };
+                        } else {
+                            response = {
+                                total_users: Object.keys(data.users).length,
+                                total_deals: Object.keys(data.deals).length,
+                                active_deals: Object.values(data.deals).filter(d => d.status === 'active').length,
+                                completed_deals: Object.values(data.deals).filter(d => d.status === 'completed').length,
+                                open_tickets: Object.values(data.tickets).filter(t => t.status === 'open').length
+                            };
+                        }
+                        break;
+
+                    default:
+                        response = { error: 'Unknown method' };
+                }
+
+                return response;
+            }
+
+            getUserIdFromSession(sessionId, data) {
+                return data.sessions[sessionId];
+            }
+
+            isAdmin(sessionId, data) {
+                const userId = this.getUserIdFromSession(sessionId, data);
+                return data.users[userId]?.is_admin === true;
+            }
+        }
+
+        // Глобальные переменные
+        let currentUser = null;
+        let sessionId = localStorage.getItem('session_id');
+        const api = new MagnateAPI();
+
+        // Утилиты
+        function showNotification(message, type = 'success') {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.remove();
+            }, 5000);
+        }
+
+        function showLoading(elementId) {
+            document.getElementById(elementId).classList.remove('hidden');
+        }
+
+        function hideLoading(elementId) {
+            document.getElementById(elementId).classList.add('hidden');
+        }
+
+        // Основные функции
+        window.addEventListener('load', () => {
+            if (sessionId) {
+                checkAuth();
+            }
+        });
+
+        async function checkAuth() {
+            try {
+                const response = await api.callBotMethod('get_user_profile', { sessionId });
+                
+                if (response.error) {
+                    localStorage.removeItem('session_id');
+                    sessionId = null;
+                } else {
+                    currentUser = response;
+                    showAppContent();
+                }
+            } catch (error) {
+                console.error('Auth check failed:', error);
+                localStorage.removeItem('session_id');
+                sessionId = null;
+            }
+        }
+
+        async function authUser() {
+            const userId = document.getElementById('user-id').value;
+            if (!userId) {
+                showNotification('Пожалуйста, введите ваш Telegram ID', 'error');
+                return;
+            }
+
+            try {
+                const response = await api.callBotMethod('auth', { user_id: userId });
+
+                if (response.error) {
+                    showNotification('Ошибка авторизации: ' + response.error, 'error');
+                } else {
+                    sessionId = response.session_id;
+                    currentUser = response.user;
+                    localStorage.setItem('session_id', sessionId);
+                    showAppContent();
+                    showNotification('Успешная авторизация!', 'success');
+                }
+            } catch (error) {
+                console.error('Auth error:', error);
+                showNotification('Ошибка соединения', 'error');
+            }
+        }
+
+        function showAppContent() {
+            document.getElementById('auth-section').classList.add('hidden');
+            document.getElementById('app-content').classList.remove('hidden');
+            updateUserProfile();
+            loadStats();
+            
+            if (currentUser.is_admin) {
+                document.getElementById('admin-btn').style.display = 'inline-block';
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('session_id');
+            sessionId = null;
+            currentUser = null;
+            document.getElementById('app-content').classList.add('hidden');
+            document.getElementById('auth-section').classList.remove('hidden');
+            showNotification('Вы вышли из системы', 'success');
+        }
+
+        function updateUserProfile() {
+            const profileInfo = document.getElementById('profile-info');
+            profileInfo.innerHTML = `
+                <p><strong>ID:</strong> ${currentUser.user_id}</p>
+                <p><strong>Username:</strong> @${currentUser.username || 'Не указан'}</p>
+                <p><strong>Баланс:</strong> ${currentUser.balance} RUB</p>
+                <p><strong>Успешных сделок:</strong> ${currentUser.successful_deals}</p>
+                <p><strong>TON кошелек:</strong> ${currentUser.ton_wallet || 'Не указан'}</p>
+                <p><strong>Банковская карта:</strong> ${currentUser.card_details || 'Не указана'}</p>
+                ${currentUser.is_admin ? '<p><strong>👑 Администратор</strong></p>' : ''}
+            `;
+        }
+
         function showSection(sectionName) {
-            // Скрыть все секции
             document.querySelectorAll('.section').forEach(section => {
                 section.classList.add('hidden');
             });
             
-            // Показать выбранную секцию
             document.getElementById(sectionName).classList.remove('hidden');
             
-            // Обновить активные кнопки навигации
             document.querySelectorAll('.nav-btn').forEach(btn => {
                 btn.classList.remove('active');
             });
             event.target.classList.add('active');
             
-            // Загрузить данные для секции
-            if (sectionName === 'tickets') {
+            if (sectionName === 'deals') {
+                loadDeals();
+            } else if (sectionName === 'tickets') {
                 loadTickets();
+            } else if (sectionName === 'admin') {
+                loadAdminData();
+            }
+        }
+
+        function showAdminSection(sectionName) {
+            document.querySelectorAll('.admin-section').forEach(section => {
+                section.classList.add('hidden');
+            });
+            
+            document.getElementById(`admin-${sectionName}`).classList.remove('hidden');
+            
+            document.querySelectorAll('#admin .nav-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+        }
+
+        async function loadStats() {
+            try {
+                document.getElementById('user-balance').textContent = currentUser.balance;
+                document.getElementById('successful-deals').textContent = currentUser.successful_deals;
+
+                const dealsResponse = await api.callBotMethod('get_active_deals', { sessionId });
+                if (dealsResponse.deals) {
+                    document.getElementById('total-deals').textContent = dealsResponse.deals.length;
+                    document.getElementById('active-deals').textContent = dealsResponse.deals.length;
+                }
+            } catch (error) {
+                console.error('Error loading stats:', error);
+            }
+        }
+
+        async function loadDeals() {
+            showLoading('deals-loading');
+            try {
+                const response = await api.callBotMethod('get_active_deals', { sessionId });
+
+                if (response.error) {
+                    showNotification('Ошибка загрузки сделок: ' + response.error, 'error');
+                } else {
+                    displayDeals(response.deals);
+                }
+            } catch (error) {
+                console.error('Error loading deals:', error);
+                showNotification('Ошибка соединения', 'error');
+            } finally {
+                hideLoading('deals-loading');
+            }
+        }
+
+        function displayDeals(deals) {
+            const dealsList = document.getElementById('deals-list');
+            
+            if (deals.length === 0) {
+                dealsList.innerHTML = '<p>Нет активных сделок</p>';
+                return;
+            }
+
+            dealsList.innerHTML = deals.map(deal => `
+                <div class="deal-item ${deal.status}">
+                    <h4>Сделка #${deal.deal_id.slice(0, 8)}</h4>
+                    <p><strong>Продавец:</strong> @${deal.seller_username}</p>
+                    <p><strong>Успешных сделок:</strong> ${deal.seller_successful_deals}</p>
+                    <p><strong>Сумма:</strong> ${deal.amount} ${deal.payment_method.toUpperCase()}</p>
+                    <p><strong>Описание:</strong> ${deal.description}</p>
+                    <div class="deal-actions">
+                        <a href="${deal.deal_link}" class="btn" target="_blank">💼 Перейти к сделке</a>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function createDeal() {
+            const amount = document.getElementById('deal-amount').value;
+            const description = document.getElementById('deal-description').value;
+            const paymentMethod = document.getElementById('payment-method').value;
+            
+            if (!amount || !description) {
+                showNotification('Пожалуйста, заполните все поля', 'error');
+                return;
+            }
+
+            try {
+                const response = await api.callBotMethod('create_deal', {
+                    sessionId,
+                    amount: amount,
+                    description: description,
+                    payment_method: paymentMethod
+                });
+
+                if (response.error) {
+                    showNotification('Ошибка создания сделки: ' + response.error, 'error');
+                } else {
+                    showNotification(`Сделка создана! Ссылка: ${response.deal_link}`, 'success');
+                    document.getElementById('deal-amount').value = '';
+                    document.getElementById('deal-description').value = '';
+                    showSection('deals');
+                    loadDeals();
+                }
+            } catch (error) {
+                console.error('Error creating deal:', error);
+                showNotification('Ошибка соединения', 'error');
             }
         }
 
@@ -380,64 +922,187 @@
             document.getElementById('create-ticket-form').classList.remove('hidden');
         }
 
-        function createDeal() {
-            const amount = document.getElementById('deal-amount').value;
-            const description = document.getElementById('deal-description').value;
-            const paymentMethod = document.getElementById('payment-method').value;
-            
-            if (!amount || !description) {
-                alert('Пожалуйста, заполните все поля');
-                return;
-            }
-            
-            // Здесь будет интеграция с API бота
-            alert(`Сделка создана!\nСумма: ${amount}\nОписание: ${description}`);
-            
-            // Перенаправление в Telegram
-            window.open(`https://t.me/YourBotUsername?start=deal_${Date.now()}`, '_blank');
-        }
-
-        function createTicket() {
+        async function createTicket() {
             const subject = document.getElementById('ticket-subject').value;
             const message = document.getElementById('ticket-message').value;
             
             if (!subject || !message) {
-                alert('Пожалуйста, заполните все поля');
+                showNotification('Пожалуйста, заполните все поля', 'error');
                 return;
             }
-            
-            // Здесь будет интеграция с API бота
-            alert(`Тикет создан!\nТема: ${subject}\nСообщение отправлено администраторам.`);
-            
-            document.getElementById('create-ticket-form').classList.add('hidden');
-            document.getElementById('ticket-subject').value = '';
-            document.getElementById('ticket-message').value = '';
+
+            try {
+                const response = await api.callBotMethod('create_ticket', {
+                    sessionId,
+                    subject: subject,
+                    message: message
+                });
+
+                if (response.error) {
+                    showNotification('Ошибка создания тикета: ' + response.error, 'error');
+                } else {
+                    showNotification('Тикет создан! ID: ' + response.ticket_id, 'success');
+                    document.getElementById('ticket-subject').value = '';
+                    document.getElementById('ticket-message').value = '';
+                    document.getElementById('create-ticket-form').classList.add('hidden');
+                    loadTickets();
+                }
+            } catch (error) {
+                console.error('Error creating ticket:', error);
+                showNotification('Ошибка соединения', 'error');
+            }
         }
 
-        function loadTickets() {
-            // Заглушка для загрузки тикетов
+        async function loadTickets() {
+            showLoading('tickets-loading');
+            try {
+                const response = await api.callBotMethod('get_my_tickets', { sessionId });
+
+                if (response.error) {
+                    showNotification('Ошибка загрузки тикетов: ' + response.error, 'error');
+                } else {
+                    displayTickets(response.tickets);
+                }
+            } catch (error) {
+                console.error('Error loading tickets:', error);
+                showNotification('Ошибка соединения', 'error');
+            } finally {
+                hideLoading('tickets-loading');
+            }
+        }
+
+        function displayTickets(tickets) {
             const ticketsList = document.getElementById('tickets-list');
-            ticketsList.innerHTML = `
-                <div class="ticket-item">
-                    <h4>Проблема с выводом средств</h4>
-                    <p>Статус: 🟢 Открыт</p>
-                    <small>Создан: 2024-01-15</small>
+            
+            if (tickets.length === 0) {
+                ticketsList.innerHTML = '<p>У вас нет тикетов</p>';
+                return;
+            }
+
+            ticketsList.innerHTML = tickets.map(ticket => `
+                <div class="ticket-item ${ticket.status}">
+                    <h4>${ticket.subject}</h4>
+                    <p><strong>Сообщение:</strong> ${ticket.message}</p>
+                    <p><strong>Статус:</strong> <span class="status-badge status-${ticket.status}">${getStatusText(ticket.status)}</span></p>
+                    <p><strong>Создан:</strong> ${new Date(ticket.created_at).toLocaleDateString()}</p>
                 </div>
-                <div class="ticket-item">
-                    <h4>Вопрос по условиям сделки</h4>
-                    <p>Статус: 🟡 В работе</p>
-                    <small>Создан: 2024-01-14</small>
+            `).join('');
+        }
+
+        function getStatusText(status) {
+            const statuses = {
+                'open': 'Открыт',
+                'in_progress': 'В работе',
+                'closed': 'Закрыт'
+            };
+            return statuses[status] || status;
+        }
+
+        async function loadAdminData() {
+            if (!currentUser.is_admin) return;
+
+            try {
+                const statsResponse = await api.callBotMethod('get_admin_stats', { sessionId });
+                if (statsResponse.error) {
+                    showNotification('Ошибка загрузки статистики: ' + statsResponse.error, 'error');
+                } else {
+                    document.getElementById('admin-total-users').textContent = statsResponse.total_users;
+                    document.getElementById('admin-total-deals').textContent = statsResponse.total_deals;
+                    document.getElementById('admin-active-deals').textContent = statsResponse.active_deals;
+                    document.getElementById('admin-open-tickets').textContent = statsResponse.open_tickets;
+                }
+
+                await loadAdminDeals();
+                await loadAdminTickets();
+
+            } catch (error) {
+                console.error('Error loading admin data:', error);
+                showNotification('Ошибка загрузки данных', 'error');
+            }
+        }
+
+        async function loadAdminDeals() {
+            showLoading('admin-deals-loading');
+            try {
+                const response = await api.callBotMethod('get_admin_deals', { sessionId });
+                if (response.error) {
+                    showNotification('Ошибка загрузки сделок: ' + response.error, 'error');
+                } else {
+                    displayAdminDeals(response.deals);
+                }
+            } catch (error) {
+                console.error('Error loading admin deals:', error);
+                showNotification('Ошибка загрузки сделок', 'error');
+            } finally {
+                hideLoading('admin-deals-loading');
+            }
+        }
+
+        function displayAdminDeals(deals) {
+            const dealsList = document.getElementById('admin-deals-list');
+            
+            if (deals.length === 0) {
+                dealsList.innerHTML = '<p>Нет сделок</p>';
+                return;
+            }
+
+            dealsList.innerHTML = deals.map(deal => `
+                <div class="deal-item ${deal.status}">
+                    <h4>Сделка #${deal.deal_id.slice(0, 8)}</h4>
+                    <p><strong>Продавец:</strong> @${deal.seller_username} (${deal.seller_successful_deals} сделок)</p>
+                    <p><strong>Покупатель:</strong> @${deal.buyer_username || 'Не назначен'}</p>
+                    <p><strong>Сумма:</strong> ${deal.amount} ${deal.payment_method.toUpperCase()}</p>
+                    <p><strong>Описание:</strong> ${deal.description}</p>
+                    <p><strong>Статус:</strong> <span class="status-badge status-${deal.status}">${getStatusText(deal.status)}</span></p>
                 </div>
-            `;
+            `).join('');
+        }
+
+        async function loadAdminTickets() {
+            showLoading('admin-tickets-loading');
+            try {
+                const response = await api.callBotMethod('get_admin_tickets', { sessionId });
+                if (response.error) {
+                    showNotification('Ошибка загрузки тикетов: ' + response.error, 'error');
+                } else {
+                    displayAdminTickets(response.tickets);
+                }
+            } catch (error) {
+                console.error('Error loading admin tickets:', error);
+                showNotification('Ошибка загрузки тикетов', 'error');
+            } finally {
+                hideLoading('admin-tickets-loading');
+            }
+        }
+
+        function displayAdminTickets(tickets) {
+            const ticketsList = document.getElementById('admin-tickets-list');
+            
+            if (tickets.length === 0) {
+                ticketsList.innerHTML = '<p>Нет тикетов</p>';
+                return;
+            }
+
+            ticketsList.innerHTML = tickets.map(ticket => `
+                <div class="ticket-item ${ticket.status}">
+                    <h4>${ticket.subject} (#${ticket.ticket_id})</h4>
+                    <p><strong>Пользователь:</strong> @${ticket.username} (ID: ${ticket.user_id})</p>
+                    <p><strong>Сообщение:</strong> ${ticket.message}</p>
+                    <p><strong>Статус:</strong> <span class="status-badge status-${ticket.status}">${getStatusText(ticket.status)}</span></p>
+                    <p><strong>Администратор:</strong> ${ticket.admin_username || 'Не назначен'}</p>
+                </div>
+            `).join('');
+        }
+
+        function adminUserAction() {
+            showNotification('Функция в разработке', 'warning');
         }
 
         // Обработка параметров URL для прямого открытия сделки
         const urlParams = new URLSearchParams(window.location.search);
         const dealId = urlParams.get('deal');
-        if (dealId) {
-            // Показать информацию о сделке
-            showSection('create-deal');
-            alert(`Открыта сделка #${dealId}`);
+        if (dealId && sessionId) {
+            showSection('deals');
         }
     </script>
 </body>
